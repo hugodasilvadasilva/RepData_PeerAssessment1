@@ -6,6 +6,9 @@
 ################################################################################
 
 # Set some variables concerned about the enviroment
+library(dplyr)
+
+
 workingdirectory <- "~/R/RepData_PeerAssessment1"
 zipfile.name <- "activity.zip"
 csvfile.name <- "activity.csv"
@@ -21,7 +24,7 @@ if (!file.exists(zipfile.path)) {
         paste(
             "Message: The script couldn't continous because the data file was not found at '",
             zipfile.path, "'", ". Solution: place the ", zipfile.name,
-            " (the one that contains the data source for this script) at ", 
+            " (the one that contains the data source for this script) at ",
             files.path, " directory and try again", sep = ""
         )
     )
@@ -33,21 +36,25 @@ if (!file.exists(csvfile.path)) {
 }
 
 # Read the data
-activity.rawdata <- read.csv(file = csvfile.path, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+activity.rawdata <-
+    read.csv(
+        file = csvfile.path, header = TRUE, sep = ",", stringsAsFactors = FALSE
+    )
 activity.data <- activity.rawdata
 
 # Converts steps columns into number values
-if(class(activity.data$steps) != "integer"){
+if (class(activity.data$steps) != "integer") {
     activity.data$steps <- as.numeric(activity.data$steps)
 }
 
 # Converts the date column into date values
-if(class(activity.data$date) != "Date"){
-    activity.data$date <- as.Date(x = as.character(activity.data$date), format = "%Y-%m-%d")
+if (class(activity.data$date) != "Date") {
+    activity.data$date <-
+        as.Date(x = as.character(activity.data$date), format = "%Y-%m-%d")
 }
 
 # Converts the interval column into number values
-if(class(activity.data$steps) != "integer"){
+if (class(activity.data$steps) != "integer") {
     activity.data$steps <- as.numeric(activity.data$steps)
 }
 
@@ -61,19 +68,71 @@ if(class(activity.data$steps) != "integer"){
 str(activity.data)
 
 # Percental of NA at each column
-sapply(activity.data, FUN = function(x){mean(is.na(x))})
+sapply(
+    activity.data, FUN = function(x) {
+        mean(is.na(x))
+    }
+)
 
+################################################################################
 # What is mean total number of steps taken per day?
-# For this part of the assignment, you can ignore the missing values in the dataset.
+# For this part of the assignment, you can ignore the missing values in the
+# dataset.
 # 1. Make a histogram of the total number of steps taken each day
-# 2. Calculate and report the mean and median total number of steps taken per day
+# 2. Calculate and report the mean and median total number of steps taken per
+# day
+################################################################################
+library(plyr)
 
-# What is the average daily activity pattern? 1. Make a time series plot (i.e.
-# type = "l") of the 5-minute interval (x-axis) and the average number of steps
-# taken, averaged across all days (y-axis) 2. Which 5-minute interval, on
-# average across all the days in the dataset, contains the maximum number of
-# steps?
+# Create a new dataset with no NA
+activity.no.na <- activity.data[!is.na(activity.data$steps),]
 
+# Summarises the total, mean and media daily number os steps
+daily.total <- ddply(activity.no.na, .(date), summarise, total = sum(steps))
+
+# Plots the histogram
+hist(daily.total$total,
+     main = "Frequency of days by its number of steps", 
+     xlab = "Number of the steps in one day",
+     ylab = "Frequency of days"
+)
+
+# Adds a vertical blue line that marks the daily average number of steps
+abline(v = mean(daily.total$total), lwd = 3, col = "blue")
+
+# mean daily number of steps
+mean(daily.total$total)
+
+# median daily number of steps
+median(daily.total$total)
+
+# clean obsolete variables
+rm(daily.total)
+
+################################################################################
+# What is the average daily activity pattern?
+# 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis)
+# and the average number of steps taken, averaged across all days (y-axis)
+# 2. Which 5-minute interval, on average across all the days in the dataset, 
+# contains the maximum number of steps?
+################################################################################
+
+# Calculate the mean number of steps of each 5-minute interval across all days
+interval.mean <- ddply(activity.no.na, .(interval), summarise, mean = mean(steps))
+
+#Plot the graph with the average number of steps for each 5-minutes interval
+plot(
+    x = interval.mean$interval, 
+    y = interval.mean$mean, 
+    type = "l", 
+    xlab = "Interval", 
+    ylab = "Number of steps", 
+    main = "Average number of steps Vs day interval"
+)
+
+# Gets the 5-minutes interval which has the maximum average number of steps
+# across all days
+interval.mean[interval.mean$mean == max(interval.mean$mean),]
 
 # Imputing missing values
 # Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some
