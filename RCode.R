@@ -85,31 +85,31 @@ sapply(
 library(plyr)
 
 # Create a new dataset with no NA
-activity.naextracted <- activity.data[!is.na(activity.data$steps),]
+activity.naignored <- activity.data[!is.na(activity.data$steps),]
 
 # Summarises the total, mean and media daily number os steps
-totalbyday.naextracted <- ddply(
-    activity.naextracted, 
+totalbyday.naignored <- ddply(
+    activity.naignored, 
     .(date),
     summarise,
     total = sum(steps)
 )
 
 # Plots the histogram
-hist(totalbyday.naextracted$total,
+hist(totalbyday.naignored$total,
      main = "Frequency of days by its number of steps", 
      xlab = "Number of the steps in one day",
      ylab = "Frequency of days"
 )
 
 # Adds a vertical blue line that marks the daily average number of steps
-abline(v = mean(totalbyday.naextracted$total), lwd = 3, col = "blue")
+abline(v = mean(totalbyday.naignored$total), lwd = 3, col = "blue")
 
 # mean daily number of steps
-mean(totalbyday.naextracted$total)
+mean(totalbyday.naignored$total)
 
 # median daily number of steps
-median(totalbyday.naextracted$total)
+median(totalbyday.naignored$total)
 
 ################################################################################
 # What is the average daily activity pattern?
@@ -120,12 +120,17 @@ median(totalbyday.naextracted$total)
 ################################################################################
 
 # Calculate the mean number of steps of each 5-minute interval across all days
-meanbyinterval.naextracted <- ddply(activity.naextracted, .(interval), summarise, mean = mean(steps))
+meanbyinterval.naignored <- ddply(
+    activity.naignored, 
+    .(interval), 
+    summarise, 
+    mean = mean(steps)
+)
 
 #Plot the graph with the average number of steps for each 5-minutes interval
 plot(
-    x = meanbyinterval.naextracted$interval, 
-    y = meanbyinterval.naextracted$mean, 
+    x = meanbyinterval.naignored$interval, 
+    y = meanbyinterval.naignored$mean, 
     type = "l", 
     xlab = "Interval", 
     ylab = "Number of steps", 
@@ -134,7 +139,8 @@ plot(
 
 # Gets the 5-minutes interval which has the maximum average number of steps
 # across all days
-meanbyinterval.naextracted[meanbyinterval.naextracted$mean == max(meanbyinterval.naextracted$mean),]
+meanbyinterval.naignored[
+    meanbyinterval.naignored$mean == max(meanbyinterval.naignored$mean),]
 
 ################################################################################
 # Imputing missing values
@@ -170,7 +176,8 @@ for (i in 1:nrow(activity.nafilled)) {
             #Repacle step value from na by the mean step value at the correspond
             #interval
             activity.nafilled[i,"steps"] <- 
-                meanbyinterval.naextracted[meanbyinterval.naextracted$interval == step.interval, "mean"]
+                meanbyinterval.naignored[
+                    meanbyinterval.naignored$interval == step.interval, "mean"]
         }
 }
 rm(step.value, step.interval)
@@ -201,12 +208,62 @@ median(totalbyday.nafilled$total)
 
 # Plots a boxplot graph so it enables a visually comparison between ignored and 
 # filled NAs values
-na.filled <- cbind(totalbyday.nafilled, datasource = "na.filled")
-na.ignored <- cbind(totalbyday.naextracted, datasource = "na.ignored")
-comparison <- rbind(na.filled, na.ignored) %>% data.frame()
-boxplot(total ~ datasource, comparison, main = "Total daily steps from Filled Vs Ignored NAs")
+totalbyday.nafilled <- cbind(totalbyday.nafilled, datasource = "na.filled")
+totalbyday.naignored <- cbind(totalbyday.naignored, datasource = "na.ignored")
+totalbyday.union <- rbind(totalbyday.nafilled, totalbyday.naignored) %>% 
+    data.frame()
+boxplot(
+    total ~ datasource, 
+    totalbyday.union, 
+    main = "Total daily steps from Filled Vs Ignored NAs")
 
-# Are there differences in activity patterns between weekdays and weekends? For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
-# 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-# 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was creating using simulated data:
-# Your plot will look different from the one above because you will be using the activity monitor data. Note that the above plot was made using the lattice system but you can make the same version of the plot using any plotting system you choose.
+cbind(
+    na.filled = summary(totalbyday.nafilled$total), 
+    na.ignored = summary(totalbyday.naignored$total)
+)
+
+################################################################################
+# Are there differences in activity patterns between weekdays and weekends?
+# For this part the weekdays() function may be of some help here. Use the 
+# dataset with the filled-in missing values for this part.
+# 1. Create a new factor variable in the dataset with two levels – “weekday” and
+# “weekend” indicating whether a given date is a weekday or weekend day.
+# 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 
+# 5-minute interval (x-axis) and the average number of steps taken, averaged 
+# across all weekday days or weekend days (y-axis). The plot should look 
+# something like the following, which was creating using simulated data:
+# Your plot will look different from the one above because you will be using 
+# the activity monitor data. Note that the above plot was made using the 
+# lattice system but you can make the same version of the plot using any 
+# plotting system you choose.
+################################################################################
+
+# Add the weekday (sun-sat) and weekdaytype (weekday or weekend) columns
+activity.weekday <- cbind(
+    activity.nafilled, 
+    weekday = sapply(activity.nafilled$date, weekdays),
+    weekdaytype = sapply(activity.weekday$weekday, function(x){
+        if(as.numeric(x) %in% c(2,3,5,6,7) ){
+            "weekday"
+        }else{
+            "weekend"
+        }
+    }))
+
+# Calculate the mean number os steps by each 5-minutes interval
+total.byintervalandweekday <- ddply(
+    activity.weekday, 
+    .(interval, weekdaytype),
+    summarise,
+    mean = mean(steps)
+)
+
+# Plot hte values by
+library(ggplot2)
+ggplot(
+    data = total.byintervalandweekday, 
+    aes(x = interval, y = mean, color = factor(weekdaytype)),
+    xlab = "Interval",
+    ylab = "Mean number of steps"
+) + geom_line()  + scale_color_hue(name = "Legenda") + ggtitle(label = "Mean number of steps by interval - Weekend Vs Weekday")
+
