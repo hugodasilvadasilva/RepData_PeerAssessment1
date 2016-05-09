@@ -1,11 +1,4 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-output:
-  word_document: default
-  pdf_document: default
-  html_document:
-    keep_md: yes
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -14,10 +7,59 @@ The code below set some variables concerned about the script enviroment in order
 to standardize and facilitate its use.  
 It also loads some general libraries that will be used on the following steps.
 
-```{r}
-library(dplyr)
-library(plyr)
 
+```r
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+library(plyr)
+```
+
+```
+## -------------------------------------------------------------------------
+```
+
+```
+## You have loaded plyr after dplyr - this is likely to cause problems.
+## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+## library(plyr); library(dplyr)
+```
+
+```
+## -------------------------------------------------------------------------
+```
+
+```
+## 
+## Attaching package: 'plyr'
+```
+
+```
+## The following objects are masked from 'package:dplyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+```
+
+```r
 workingdirectory <- "~/R/RepData_PeerAssessment1"
 zipfile.name <- "activity.zip"
 csvfile.name <- "activity.csv"
@@ -33,7 +75,8 @@ is where expected (the zip file dataset must be provided and placed into the
 specific folder as defined into the **zipfile.path** variable).
 The script also checks if load/unzip step is really required once it may had 
 been executed beforehand.
-```{r}
+
+```r
 # Check if zipfile is where expected
 if (!file.exists(zipfile.path)) {
     stop(
@@ -59,13 +102,12 @@ activity.rawdata <-
 # Create a different dataframe so the raw data is preserved at its original 
 # format in order to future need
 activity.data <- activity.rawdata
-
 ```
 
 From now on, it format the columns to the correct type of value
 
-```{r}
 
+```r
 # Converts steps columns into number values
 if (class(activity.data$steps) != "integer") {
     activity.data$steps <- as.numeric(activity.data$steps)
@@ -86,16 +128,31 @@ if (class(activity.data$steps) != "integer") {
 The code below just bring up some additional information about the dataframe
 in order to you to be familiar with its content.
 
-```{r}
+
+```r
 # Data structure info
 str(activity.data)
+```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
 # Percental of NA at each column
 sapply(
     activity.data, FUN = function(x) {
         mean(is.na(x))
     }
 )
+```
+
+```
+##     steps      date  interval 
+## 0.1311475 0.0000000 0.0000000
 ```
 
 ## What is the mean total number of steps taken per day?
@@ -105,7 +162,8 @@ to preserve the clean and tidy data.set that was build by the previous code.
 Thus some new variables were created and some additional cleanning data steps
 executed, since all NA values will be ignored to answer the currently.
 
-```{r}
+
+```r
 # Create a new dataset with no NA value
 activity.naignored <- activity.data[!is.na(activity.data$steps),]
 ```
@@ -114,7 +172,8 @@ The following code summarises the total number of steps for each day and
 plot the result into a histogram. Furthermore, it scratches a vertical blue line
 into the graph indicating the average number of total taken steps per day.
 
-```{r}
+
+```r
 # Summarises the total daily number os steps
 totalbyday.naignored <- ddply(
     activity.naignored, 
@@ -132,22 +191,34 @@ hist(totalbyday.naignored$total,
 
 # Adds a vertical blue line indicating the daily average number of steps
 abline(v = mean(totalbyday.naignored$total), lwd = 3, col = "blue")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)
 
 Besides the graph information below, the following code reports some numerical 
 info concerned about what has been asked.
 
-```{r}
+
+```r
 # mean daily number of steps
 mean(totalbyday.naignored$total)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 # median daily number of steps
 median(totalbyday.naignored$total)
 ```
 
+```
+## [1] 10765
+```
+
 As you can see the average number of total daily steps is
-`r mean(totalbyday.naignored$total)`.
+1.0766189\times 10^{4}.
 
 ## What is the average daily activity pattern?
 
@@ -156,7 +227,8 @@ which means that all records containing NA values were ignored.
 The first step was calculates the mean number of steps of each 5-minute interval
 across all days.
 
-```{r}
+
+```r
 # Calculate the mean number of steps of each 5-minute interval across all days
 meanbyinterval.naignored <- ddply(
     activity.naignored, 
@@ -168,7 +240,8 @@ meanbyinterval.naignored <- ddply(
 Then, it plots one graph ilustrating the mean number of steps for each 5-minutes
 interval across all days.
 
-```{r}
+
+```r
 #Plot the graph with the average number of steps for each 5-minutes interval
 plot(
     x = meanbyinterval.naignored$interval, 
@@ -180,14 +253,22 @@ plot(
 )
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)
+
 As a complementary info, the script identifies in which 5-minutes interval
 the average number of steps use to have the biggest number of steps.
 
-```{r}
+
+```r
 # Gets the 5-minutes interval which has the maximum average number of steps
 # across all days
 meanbyinterval.naignored[
     meanbyinterval.naignored$mean == max(meanbyinterval.naignored$mean),]
+```
+
+```
+##     interval     mean
+## 104      835 206.1698
 ```
 
 ## Imputing missing values
@@ -195,8 +276,8 @@ meanbyinterval.naignored[
 As you could see at the beginning of this analises, the original dataset contains
 NA values. For the previous analyses, theses observations were ignored, but 
 it would be interesting to check if by ignoring all these values (
-```r sum(!complete.cases(activity.data))``` to be more precise, or 
-```r mean(!complete.cases(activity.data))*100```% of observations)  
+``2304`` to be more precise, or 
+``13.1147541``% of observations)  
 we are not changing the result significantly. For this purpose the code created
 a new data frame where no observation containing NA values were ignored and its
 values replaced by its correspondent average number of total steps 
@@ -204,18 +285,29 @@ interval across all days.
 First, the code bellow reports the number and percental of observations 
 containing NA values.
 
-```{r}
+
+```r
 # Calculate the number and percental of rows with missing values
 sum(!complete.cases(activity.data))
+```
 
+```
+## [1] 2304
+```
+
+```r
 mean(!complete.cases(activity.data))
+```
 
+```
+## [1] 0.1311475
 ```
 
 Now it iterates over the data frame and replaces all NA values by it's 
 correspondent mean 5-minutes interval.
 
-```{r}
+
+```r
 # Replace NA values by interval mean
 activity.nafilled <- activity.data
 for (i in 1:nrow(activity.nafilled)) {
@@ -240,7 +332,8 @@ Now it's time to report the results. First, the total daily number of steps
 result ilustrated into a histogram which contains the same vertical blue line 
 indicating the average number of daily total steps.
 
-```{r}
+
+```r
 # Calculate the total daily number of steps from activity.nafilled variable
 totalbyday.nafilled <- ddply(
     activity.nafilled, 
@@ -260,14 +353,27 @@ hist(totalbyday.nafilled$total,
 abline(v = mean(totalbyday.nafilled$total), lwd = 3, col = "blue")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)
+
 Now the numeric mean and median values of total number of steps taken per day.
 
-```{r}
+
+```r
 # mean daily number of steps
 mean(totalbyday.nafilled$total)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 # median daily number of steps
 median(totalbyday.nafilled$total)
+```
+
+```
+## [1] 10766.19
 ```
 
 Lastly the boxplot and the summary comparison below, allows you to identify that
@@ -275,7 +381,8 @@ by ignoring or replacing NA values by its correspondent 5-minutes interval mean,
 doesn't make any big difference, once that the mean value remains almost the
 same. Some difference can be seen only ate the quartiles.
 
-```{r}
+
+```r
 # Plots a boxplot graph so it enables a visually comparison between ignored and 
 # filled NAs values
 totalbyday.nafilled <- cbind(totalbyday.nafilled, datasource = "na.filled")
@@ -286,11 +393,25 @@ boxplot(
     total ~ datasource, 
     totalbyday.union, 
     main = "Total daily steps from Filled Vs Ignored NAs")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)
+
+```r
 cbind(
     na.filled = summary(totalbyday.nafilled$total), 
     na.ignored = summary(totalbyday.naignored$total)
 )
+```
+
+```
+##         na.filled na.ignored
+## Min.           41         41
+## 1st Qu.      9819       8841
+## Median      10770      10760
+## Mean        10770      10770
+## 3rd Qu.     12810      13290
+## Max.        21190      21190
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -301,7 +422,8 @@ of each sample. Then, it classified the weekdays into **weekend** or
 Next, it finds the mean number of steps by each 5-minutes interval across all 
 days to finally plot all these data into one line graph.
 
-```{r}
+
+```r
 # Add the weekday (sun-sat) and weekdaytype (weekday or weekend) columns
 activity.weekday <- cbind(
     activity.nafilled, 
@@ -329,6 +451,13 @@ total.byintervalandweekday <- ddply(
 
 # Plot hte values by
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.2.4
+```
+
+```r
 ggplot(
     data = total.byintervalandweekday, 
     aes(x = interval, y = mean, color = factor(weekdaytype)),
@@ -336,6 +465,8 @@ ggplot(
     ylab = "Mean number of steps"
 ) + geom_line()  + scale_color_hue(name = "Legenda") + ggtitle(label = "Mean number of steps by interval - Weekend Vs Weekday")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-16-1.png)
 
 By checking out the last graph it's possible to conclude:
 - People usually starts to walk after the 500 5-minutes interval
