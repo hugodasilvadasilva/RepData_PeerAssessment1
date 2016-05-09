@@ -85,29 +85,31 @@ sapply(
 library(plyr)
 
 # Create a new dataset with no NA
-activity.no.na <- activity.data[!is.na(activity.data$steps),]
+activity.naextracted <- activity.data[!is.na(activity.data$steps),]
 
 # Summarises the total, mean and media daily number os steps
-daily.total <- ddply(activity.no.na, .(date), summarise, total = sum(steps))
+totalbyday.naextracted <- ddply(
+    activity.naextracted, 
+    .(date),
+    summarise,
+    total = sum(steps)
+)
 
 # Plots the histogram
-hist(daily.total$total,
+hist(totalbyday.naextracted$total,
      main = "Frequency of days by its number of steps", 
      xlab = "Number of the steps in one day",
      ylab = "Frequency of days"
 )
 
 # Adds a vertical blue line that marks the daily average number of steps
-abline(v = mean(daily.total$total), lwd = 3, col = "blue")
+abline(v = mean(totalbyday.naextracted$total), lwd = 3, col = "blue")
 
 # mean daily number of steps
-mean(daily.total$total)
+mean(totalbyday.naextracted$total)
 
 # median daily number of steps
-median(daily.total$total)
-
-# clean obsolete variables
-rm(daily.total)
+median(totalbyday.naextracted$total)
 
 ################################################################################
 # What is the average daily activity pattern?
@@ -118,12 +120,12 @@ rm(daily.total)
 ################################################################################
 
 # Calculate the mean number of steps of each 5-minute interval across all days
-interval.mean <- ddply(activity.no.na, .(interval), summarise, mean = mean(steps))
+meanbyinterval.naextracted <- ddply(activity.naextracted, .(interval), summarise, mean = mean(steps))
 
 #Plot the graph with the average number of steps for each 5-minutes interval
 plot(
-    x = interval.mean$interval, 
-    y = interval.mean$mean, 
+    x = meanbyinterval.naextracted$interval, 
+    y = meanbyinterval.naextracted$mean, 
     type = "l", 
     xlab = "Interval", 
     ylab = "Number of steps", 
@@ -132,15 +134,77 @@ plot(
 
 # Gets the 5-minutes interval which has the maximum average number of steps
 # across all days
-interval.mean[interval.mean$mean == max(interval.mean$mean),]
+meanbyinterval.naextracted[meanbyinterval.naextracted$mean == max(meanbyinterval.naextracted$mean),]
 
+################################################################################
 # Imputing missing values
-# Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some
+# Note that there are a number of days/intervals where there are missing values
+# (coded as NA). The presence of missing days may introduce bias into some
 # calculations or summaries of the data.
-# 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-# 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-# 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
-# 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+# 1. Calculate and report the total number of missing values in the dataset 
+# (i.e. the total number of rows with NAs)
+# 2. Devise a strategy for filling in all of the missing values in the dataset.
+# The strategy does not need to be sophisticated. For example, you could use the
+# mean/median for that day, or the mean for that 5-minute interval, etc.
+# 3. Create a new dataset that is equal to the original dataset but with the 
+# missing data filled in.
+# 4. Make a histogram of the total number of steps taken each day and Calculate
+# and report the mean and median total number of steps taken per day. Do these 
+# values differ from the estimates from the first part of the assignment? 
+# What is the impact of imputing missing data on the estimates of the total 
+# daily number of steps?
+################################################################################
+
+# Calculate the number of rows with missing values
+sum(!complete.cases(activity.data))
+
+# Replace NA values by interval mean
+activity.nafilled <- activity.data
+for (i in 1:nrow(activity.nafilled)) {
+        #Get the step value
+        step.value <- activity.nafilled[i,"steps"]
+        if (is.na(step.value)) {
+            #Get the step interval
+            step.interval <- activity.nafilled[i, "interval"]
+            
+            #Repacle step value from na by the mean step value at the correspond
+            #interval
+            activity.nafilled[i,"steps"] <- 
+                meanbyinterval.naextracted[meanbyinterval.naextracted$interval == step.interval, "mean"]
+        }
+}
+rm(step.value, step.interval)
+
+# Calculate the total by day from activity.nafilled
+totalbyday.nafilled <- ddply(
+    activity.nafilled, 
+    .(date),
+    summarise,
+    total = sum(steps)
+)
+
+# Plots the histogram
+hist(totalbyday.nafilled$total,
+     main = "Frequency of days by its number of steps", 
+     xlab = "Number of the steps in one day",
+     ylab = "Frequency of days"
+)
+
+# Adds a vertical blue line that marks the daily average number of steps
+abline(v = mean(totalbyday.nafilled$total), lwd = 3, col = "blue")
+
+# mean daily number of steps
+mean(totalbyday.nafilled$total)
+
+# median daily number of steps
+median(totalbyday.nafilled$total)
+
+# Plots a boxplot graph so it enables a visually comparison between ignored and 
+# filled NAs values
+na.filled <- cbind(totalbyday.nafilled, datasource = "na.filled")
+na.ignored <- cbind(totalbyday.naextracted, datasource = "na.ignored")
+comparison <- rbind(na.filled, na.ignored) %>% data.frame()
+boxplot(total ~ datasource, comparison, main = "Total daily steps from Filled Vs Ignored NAs")
 
 # Are there differences in activity patterns between weekdays and weekends? For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 # 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
