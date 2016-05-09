@@ -3,7 +3,7 @@
 
 ## Loading and preprocessing the data
 
-The code below set some variables concerned about the script enviroment in order
+The code below sets some variables concerning the script enviroment in order
 to standardize and facilitate its use.  
 It also loads some general libraries that will be used on the following steps.
 
@@ -70,11 +70,11 @@ csvfile.path <- paste(files.path, csvfile.name, sep = "/")
 setwd(workingdirectory)
 ```
 
-As a next step it unzip and load the dataset. For this, it verifies if the file
-is where expected (the zip file dataset must be provided and placed into the
-specific folder as defined into the **zipfile.path** variable).
-The script also checks if load/unzip step is really required once it may had 
-been executed beforehand.
+As the next step it unzips and loads the dataset. In order to do that, it 
+verifies if the file is where expected (the zip file dataset must be provided 
+and placed into the specific folder as defined into the **zipfile.path** variable).
+The script also checks if load/unzip step is really required once it may have 
+been executed beforehands.
 
 ```r
 # Check if zipfile is where expected
@@ -104,7 +104,7 @@ activity.rawdata <-
 activity.data <- activity.rawdata
 ```
 
-From now on, it format the columns to the correct type of value
+From now on, it formats the columns to the correct type of value.
 
 
 ```r
@@ -125,8 +125,8 @@ if (class(activity.data$steps) != "integer") {
 }
 ```
 
-The code below just bring up some additional information about the dataframe
-in order to you to be familiar with its content.
+The code below just brings up some additional information about the dataframe
+for you to be familiar with its content.
 
 
 ```r
@@ -158,7 +158,7 @@ sapply(
 ## What is the mean total number of steps taken per day?
 
 To answer this question, the script executes some preparation steps in order
-to preserve the clean and tidy data.set that was build by the previous code.
+to preserve the cleanned and tidied dataset that was built previously.
 Thus some new variables were created and some additional cleanning data steps
 executed, since all NA values will be ignored to answer the currently.
 
@@ -169,7 +169,7 @@ activity.naignored <- activity.data[!is.na(activity.data$steps),]
 ```
 
 The following code summarises the total number of steps for each day and 
-plot the result into a histogram. Furthermore, it scratches a vertical blue line
+plots the result into a histogram. Furthermore, it scratches a vertical blue line
 into the graph indicating the average number of total taken steps per day.
 
 
@@ -184,7 +184,7 @@ totalbyday.naignored <- ddply(
 
 # Plots the histogram
 hist(totalbyday.naignored$total,
-     main = "Frequency of days by its number of steps", 
+     main = "Histogram of the total number of steps taken each day", 
      xlab = "Number of the steps in one day",
      ylab = "Frequency of days"
 )
@@ -196,11 +196,11 @@ abline(v = mean(totalbyday.naignored$total), lwd = 3, col = "blue")
 ![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)
 
 Besides the graph information below, the following code reports some numerical 
-info concerned about what has been asked.
+info concerning what has been asked.
 
 
 ```r
-# mean daily number of steps
+# mean number of steps taken each day
 mean(totalbyday.naignored$total)
 ```
 
@@ -209,7 +209,7 @@ mean(totalbyday.naignored$total)
 ```
 
 ```r
-# median daily number of steps
+# median number of steps taken each day
 median(totalbyday.naignored$total)
 ```
 
@@ -217,14 +217,14 @@ median(totalbyday.naignored$total)
 ## [1] 10765
 ```
 
-As you can see the average number of total daily steps is
+As you can see, the average number of total daily steps is
 1.0766189\times 10^{4}.
 
 ## What is the average daily activity pattern?
 
-To answer this question the code below used the same data frame as before, 
-which means that all records containing NA values were ignored.
-The first step was calculates the mean number of steps of each 5-minute interval
+To answer this question the code below took as its input the data frame
+with NA values ignored.
+The first step was calculating the mean number of steps of each 5-minute interval
 across all days.
 
 
@@ -237,8 +237,8 @@ meanbyinterval.naignored <- ddply(
     mean = mean(steps)
 )
 ```
-Then, it plots one graph ilustrating the mean number of steps for each 5-minutes
-interval across all days.
+
+Then, it plotted the result into line graph.
 
 
 ```r
@@ -247,16 +247,16 @@ plot(
     x = meanbyinterval.naignored$interval, 
     y = meanbyinterval.naignored$mean, 
     type = "l", 
-    xlab = "Interval", 
+    xlab = "Time (5-minutes interval)", 
     ylab = "Number of steps", 
-    main = "Average number of steps Vs day interval"
+    main = "Average number of steps taken"
 )
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)
 
 As a complementary info, the script identifies in which 5-minutes interval
-the average number of steps use to have the biggest number of steps.
+the higgest average of total number of steps happen.
 
 
 ```r
@@ -273,12 +273,12 @@ meanbyinterval.naignored[
 
 ## Imputing missing values
 
-As you could see at the beginning of this analises, the original dataset contains
+As you could see in the beginning of this analises, the original dataset contains
 NA values. For the previous analyses, theses observations were ignored, but 
 it would be interesting to check if by ignoring all these values (
 ``2304`` to be more precise, or 
-``13.1147541``% of observations)  
-we are not changing the result significantly. For this purpose the code created
+``13.1147541``% of the total observations) we are not 
+changing the result significantly. For this purpose the code created
 a new data frame where no observation containing NA values were ignored and its
 values replaced by its correspondent average number of total steps 
 interval across all days.  
@@ -329,7 +329,7 @@ rm(step.value, step.interval)
 ```
 
 Now it's time to report the results. First, the total daily number of steps
-result ilustrated into a histogram which contains the same vertical blue line 
+is ilustrated into a histogram which also contains one vertical blue line 
 indicating the average number of daily total steps.
 
 
@@ -376,10 +376,10 @@ median(totalbyday.nafilled$total)
 ## [1] 10766.19
 ```
 
-Lastly the boxplot and the summary comparison below, allows you to identify that
-by ignoring or replacing NA values by its correspondent 5-minutes interval mean,
-doesn't make any big difference, once that the mean value remains almost the
-same. Some difference can be seen only ate the quartiles.
+Lastly the boxplot and the summary comparison below allow you to identify that
+by ignoring or replacing NA values by its correspondent 5-minutes interval mean
+doesn't make any big difference, once the mean value in both cases remains almost the
+same. Some difference can be seen only at the 1st and 3rd quartiles.
 
 
 ```r
@@ -416,8 +416,8 @@ cbind(
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-To try to answer this question the code below identified which is the weekday
-of each sample. Then, it classified the weekdays into **weekend** or 
+To try to answer this question the code below identifies which is the weekday
+of each sample. Then, it classified the days of the week into **weekend** or 
 **weekday**.  
 Next, it finds the mean number of steps by each 5-minutes interval across all 
 days to finally plot all these data into one line graph.
@@ -463,18 +463,18 @@ ggplot(
     aes(x = interval, y = mean, color = factor(weekdaytype)),
     xlab = "Interval",
     ylab = "Mean number of steps"
-) + geom_line()  + scale_color_hue(name = "Legenda") + ggtitle(label = "Mean number of steps by interval - Weekend Vs Weekday")
+) + geom_line()  + scale_color_hue(name = "Legend") + ggtitle(label = "Mean number of steps by interval - Weekend Vs Weekday")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-16-1.png)
 
-By checking out the last graph it's possible to conclude:
-- People usually starts to walk after the 500 5-minutes interval
+By checking out the last graph it's possible to conclude:  
+- People usually start walking after the 500th 5-minutes interval;  
 - On the weekdays the number of steps at the initial intervals is higher thant 
-those at the weekend.
-- Between the 800 (aprox.) and 1.000 interval, the number of steps seams to be
-the highest of the day, indicating a possible running activity during this 
-period of time;  
-- Along all the rest of the day people walks more during the weekend than during
-the weekdays, problably because at weekdays people use to be at the office,
-where it's not usual to walk.
+those at the weekend;  
+- For both, weekend and weekday, the number of steps between the 800th and 
+1.000th (aprox.) interval, the number of steps seams to be the highest of the 
+day, indicating a possible running activity during this period of time;  
+- Along all the rest of the day people walk more during the weekends than during
+the weekdays, problably because they are usually at the office, where it's more common
+to be sitted than to be walking.
